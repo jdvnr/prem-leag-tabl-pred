@@ -1,5 +1,7 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
+import Icon from './Icons'
+import type { IconName } from '../assets/icons'
 
 type Props = {
   id: string
@@ -7,7 +9,7 @@ type Props = {
   name: string
 }
 
-export default function TeamItem({ id, position, name, icon }: Props) {
+export default function TeamItem({ id, position, name }: Props) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({ id })
 
@@ -18,11 +20,12 @@ export default function TeamItem({ id, position, name, icon }: Props) {
     zIndex: isDragging ? 1 : 'auto',
     position: 'relative',
   }
-
+  const icon_name = name.toLowerCase().split(' ').join('_') as IconName
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
       <div style={isDragging ? { ...itemStyles.row, ...itemStyles.rowDragging } : itemStyles.row}>
         <span style={itemStyles.position}>{position}</span>
+        <Icon name={icon_name} />
         <span style={itemStyles.name}>{name}</span>
         <span style={itemStyles.handle}>⠿</span>
       </div>

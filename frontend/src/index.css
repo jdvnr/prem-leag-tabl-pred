@@ -85,3 +85,8 @@ button.secondary {
 button.secondary:hover {
   color: var(--text);
 }
+
+.hub-card:hover {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
