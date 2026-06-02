@@ -1,4 +1,10 @@
+import { useNavigate } from 'react-router-dom'
+import { getToken } from '../auth'
+
 export default function OthersPredictionPage() {
+  const token = getToken()
+  const navigate = useNavigate()
+  if (!token) navigate('/')
   return (
     <div style={styles.page}>
       <div style={styles.container}>

@@ -2,17 +2,22 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import EmailForm from '../components/EmailForm'
 import SignUpForm from '../components/SignUpForm'
+import { login_attempt } from '../api'
+import { saveSession } from '../auth'
 
 type View = 'email' | 'signup'
 export default function WelcomePage() {
   const [view, setView] = useState<View>('email')
   const navigate = useNavigate()
 
-  function handleEmailContinue(email: string) {
-    // Later: check if user exists in Supabase
-    // For now, go straight to sign up
-    console.log('Email submitted:', email)
-    setView('signup')
+  async function handleEmailContinue(email: string) {
+    const result = await login_attempt(email)
+    if (result.found) {
+      saveSession(result.token, result.user_id)
+      navigate('/predict')
+    } else {
+      setView('signup')
+    }
   }
 
   function handleSignUp(firstName: string, lastName: string, email: string) {

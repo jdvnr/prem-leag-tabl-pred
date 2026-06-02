@@ -14,6 +14,7 @@ import {
 } from '@dnd-kit/sortable'
 import TeamItem from '../components/TeamItem'
 import { useNavigate } from 'react-router-dom'
+import { getToken } from '../auth'
 
 const TEAMS_2026_27 = [
   'Arsenal', 'Aston Villa', 'Bournemouth', 'Brentford', 'Brighton',
@@ -23,9 +24,12 @@ const TEAMS_2026_27 = [
 ]
 
 export default function MyPredictionPage() {
+  const token = getToken()
+  const navigate = useNavigate()
+  if (!token) navigate('/')
+
   const [teams, setTeams] = useState<string[]>([...TEAMS_2026_27].sort())
   const sensors = useSensors(useSensor(PointerSensor))
-  const navigate = useNavigate()
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
     if (!over || active.id === over.id) return
