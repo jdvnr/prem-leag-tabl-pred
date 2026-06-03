@@ -1,29 +1,34 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+// import { useNavigate } from 'react-router-dom'
 import EmailForm from '../components/EmailForm'
 import SignUpForm from '../components/SignUpForm'
-import { login_attempt } from '../api'
-import { saveSession } from '../auth'
+import { login_attempt, upsertUser } from '../api'
+// import { saveSession } from '../auth'
 
-type View = 'email' | 'signup'
+type View = 'email' | 'signup' | 'confirmation'
 export default function WelcomePage() {
   const [view, setView] = useState<View>('email')
-  const navigate = useNavigate()
+  // const navigate = useNavigate()
 
   async function handleEmailContinue(email: string) {
-    const result = await login_attempt(email)
-    if (result.found) {
-      saveSession(result.token, result.user_id)
-      navigate('/predict')
-    } else {
-      setView('signup')
+    try {
+      await login_attempt(email)
+      setView('confirmation')
+    } catch (err) {
+      console.error('Login failed: ', err)
     }
+
   }
 
-  function handleSignUp(firstName: string, lastName: string, email: string) {
+  async function handleSignUp(firstName: string, lastName: string, email: string) {
     // Later: call upsert_user, get token, send email
-    console.log('Sign up:', firstName, lastName, email)
-    navigate('/predict')
+    try {
+      await upsertUser(firstName, lastName, email)
+      setView('confirmation')
+    } catch (err) {
+      console.error('Sign up failed: ', err)
+    }
+
   }
   return (<div style={styles.page}>
     <div style={styles.card}>
@@ -44,6 +49,10 @@ export default function WelcomePage() {
           onSubmit={handleSignUp}
           onBack={() => setView('email')}
         />
+      )}
+
+      {view === 'confirmation' && (
+        <div style={styles.header}><p style={styles.confirmation}>To login, use the link sent to your email.</p></div>
       )}
     </div>
   </div>)
@@ -81,4 +90,7 @@ const styles: Record<string, React.CSSProperties> = {
     marginTop: '8px',
     fontSize: '0.95rem',
   },
+  confirmation: {
+    color: 'var(--muted)',
+  }
 }
