@@ -112,3 +112,22 @@ export async function getAllPredictions(
   if (error) throw error
   return data as PublicPrediction[]
 }
+
+// ---- Login / Signup ---- //
+// export async function sendLoginEmail(email: string, token: string): Promise<void> {
+//   const res = await fetch('/api/send-login-email', {
+//     method: 'POST',
+//     headers: { 'Content-Type': 'application/json' },
+//     body: JSON.stringify({ email, token })
+//   })
+//   if (!res.ok) throw new Error('Failed to send login email')
+// }
+
+// export async function sendSignUpEmail(email: string, firstName: string, lastName: string, token: string): Promise<void> {
+//   const res = await fetch('/api/send-signup-email', {
+//     method: 'POST',
+//     headers: { 'Content-Type': 'application/json' },
+//     body: JSON.stringify({ email, firstName, lastName, token })
+//   })
+//   if (!res.ok) throw new Error('Failed to send signup email')
+// }

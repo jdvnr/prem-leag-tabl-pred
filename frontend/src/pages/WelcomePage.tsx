@@ -2,7 +2,6 @@ import { useState } from 'react'
 // import { useNavigate } from 'react-router-dom'
 import EmailForm from '../components/EmailForm'
 import SignUpForm from '../components/SignUpForm'
-import { login_attempt, upsertUser } from '../api'
 // import { saveSession } from '../auth'
 
 type View = 'email' | 'signup' | 'confirmation'
@@ -12,7 +11,11 @@ export default function WelcomePage() {
 
   async function handleEmailContinue(email: string) {
     try {
-      await login_attempt(email)
+      await fetch('/api/send-login-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      })
       setView('confirmation')
     } catch (err) {
       console.error('Login failed: ', err)
@@ -23,7 +26,11 @@ export default function WelcomePage() {
   async function handleSignUp(firstName: string, lastName: string, email: string) {
     // Later: call upsert_user, get token, send email
     try {
-      await upsertUser(firstName, lastName, email)
+      await fetch('/api/send-signup-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, firstName, lastName })
+      })
       setView('confirmation')
     } catch (err) {
       console.error('Sign up failed: ', err)

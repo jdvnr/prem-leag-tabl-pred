@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   DndContext,
   closestCenter,
@@ -13,8 +13,8 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable'
 import TeamItem from '../components/TeamItem'
-import { useNavigate } from 'react-router-dom'
-import { getToken } from '../auth'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { getToken, saveSession } from '../auth'
 
 const TEAMS_2026_27 = [
   'Arsenal', 'Aston Villa', 'Bournemouth', 'Brentford', 'Brighton',
@@ -24,9 +24,18 @@ const TEAMS_2026_27 = [
 ]
 
 export default function MyPredictionPage() {
-  const token = getToken()
+  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  if (!token) navigate('/')
+  useEffect(() => {
+    const urlToken = searchParams.get('token')
+
+    if (urlToken) {
+      saveSession(urlToken)
+      window.history.replaceState({}, '', '/predict/my')
+    } else if (!getToken()) {
+      navigate('/')
+    }
+  }, [])
 
   const [teams, setTeams] = useState<string[]>([...TEAMS_2026_27].sort())
   const sensors = useSensors(useSensor(PointerSensor))

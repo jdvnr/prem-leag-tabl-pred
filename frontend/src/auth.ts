@@ -1,9 +1,8 @@
 const TOKEN_KEY = 'predictor_token'
 const USER_ID_KEY = 'predictor_user_id'
 
-export function saveSession(token: string, userId: string) {
+export function saveSession(token: string) {
   localStorage.setItem(TOKEN_KEY, token)
-  localStorage.setItem(USER_ID_KEY, userId)
 }
 
 export function getToken(): string | null {
