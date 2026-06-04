@@ -1,35 +1,38 @@
 import { Resend } from 'resend'
 import { supabase } from './_supabase'
+import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { log } from 'console'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-export default async function handler(req: Request): Promise<Response> {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
-    return Response.json({ error: 'Method not allowed' }, { status: 405 })
+    return res.status(405).json({ error: 'Method not allowed' })
   }
-  const { email, firstName, lastName } = await req.json()
-  let { data, error } = await supabase.rpc('upsert_user', {
+
+  const { email, firstName, lastName } = req.body
+
+  if (!email || !firstName || !lastName) {
+    return res.status(400).json({ error: 'Missing required fields' })
+  }
+
+  const { data, error: dbError } = await supabase.rpc('upsert_user', {
     p_first_name: firstName,
     p_last_name: lastName,
     p_email: email,
   })
-  if (error) return Response.json({ error: 'Failed to create user' }, { status: 500 })
+  if (dbError) return res.status(500).json({ error: 'Failed to create user' })
 
   const token = data.token
   if (!email || !token || !firstName || !lastName) {
     return Response.json({ error: 'Request malformed' }, { status: 400 })
   }
 
-  const res = await sendEmail(email, token)
-  if (!res.ok) throw new Error('Failed to send email')
-  return Response.json({ success: true })
-}
-
-async function sendEmail(email: string, token: string): Promise<Response> {
   const loginUrl = `${process.env.VITE_APP_URL}/predict?token=${token}`
-  let { error } = await resend.emails.send({
-    from: "That's Offside! <noreply@thatsoffside.com",
-    to: email,
+  console.log('Creating url: %s - attempting email', loginUrl)
+  const { error: emailError } = await resend.emails.send({
+    from: "That's Offside! <onboarding@resend.dev>",
+    to: 'nair.jayadev@gmail.com',
     subject: "Welcome to That's Offside!",
     html: `
       <p> You're now registered at That's Offside! Here's your login link:</p>
@@ -38,9 +41,8 @@ async function sendEmail(email: string, token: string): Promise<Response> {
       <p>You can reuse this link to sign-in every time - but keep it to yourself!</p>
     `
   })
-  if (error) {
-    console.error('Resend error: ', error)
-    return Response.json({ error: 'Failed to send email' }, { status: 500 })
+  if (emailError) {
+    return res.status(500).json({ error: 'Failed to send email' })
   }
-  return Response.json({ success: true })
+  return res.status(200).json({ success: true })
 }
