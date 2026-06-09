@@ -1,8 +1,19 @@
-import { useNavigate } from 'react-router-dom'
-import { getToken } from '../auth'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { getToken, saveSession } from '../auth'
+import { useEffect } from 'react'
 
 export default function PredictionPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  useEffect(() => {
+    const urlToken = searchParams.get('token')
+    if (urlToken) {
+      saveSession(urlToken)
+      window.history.replaceState({}, '', '/predict/my')
+    } else if (!getToken()) {
+      navigate('/')
+    }
+  }, [navigate])
   const token = getToken()
   if (!token) navigate('/')
   return (

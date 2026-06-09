@@ -4,3 +4,5 @@ node_modules/@supabase
 frontend/.env*
 frontend/.env.development
 frontend/.env.production
+.vercel
+.env*

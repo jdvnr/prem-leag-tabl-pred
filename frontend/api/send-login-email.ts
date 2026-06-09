@@ -1,32 +1,27 @@
+import { VercelRequest, VercelResponse } from '@vercel/node'
 import { supabase } from './_supabase'
 import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
-export default async function handler(req: Request): Promise<Response> {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
-    return Response.json({ error: 'Method not allowed' }, { status: 405 })
+    return res.status(405).json({ error: 'Method not allowed' })
   }
-  const { email } = await req.json()
-  const { data, error } = await supabase.rpc('login', {
+  const { email } = await req.body
+  const { data, error: dbError } = await supabase.rpc('login', {
     p_email: email
   })
-  if (error) throw error
+  if (dbError) return res.status(500).json({ error: 'Failed user look-up' })
 
   const token = data.token
   if (!email || !token) {
-    return Response.json({ error: 'Request malformed' }, { status: 400 })
+    return res.status(400).json({ error: 'Request malformed' })
   }
 
-  const res = await sendEmail(email, token)
-  if (!res.ok) throw new Error('Failed to send login email')
-  return Response.json({ success: true })
-}
-
-async function sendEmail(email: string, token: string): Promise<Response> {
   const loginUrl = `${process.env.VITE_APP_URL}/predict?token=${token}`
   const { error } = await resend.emails.send({
-    from: "That's Offside! <noreply@thatsoffside.com",
+    from: "That's Offside! <onboarding@resend.dev>",
     to: email,
     subject: "Your login link - That's Offside!",
     html: `
@@ -37,7 +32,7 @@ async function sendEmail(email: string, token: string): Promise<Response> {
   })
   if (error) {
     console.error('Resend error: ', error)
-    return Response.json({ error: 'Failed to send email' }, { status: 500 })
+    return res.status(500).json({ error: 'Failed to send email' })
   }
-  return Response.json({ success: true })
+  return res.status(200).json({ success: true })
 }

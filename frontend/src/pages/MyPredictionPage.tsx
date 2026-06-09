@@ -24,19 +24,7 @@ const TEAMS_2026_27 = [
 ]
 
 export default function MyPredictionPage() {
-  const [searchParams] = useSearchParams()
-  const navigate = useNavigate()
-  useEffect(() => {
-    const urlToken = searchParams.get('token')
-
-    if (urlToken) {
-      saveSession(urlToken)
-      window.history.replaceState({}, '', '/predict/my')
-    } else if (!getToken()) {
-      navigate('/')
-    }
-  }, [])
-
+  const nav = useNavigate()
   const [teams, setTeams] = useState<string[]>([...TEAMS_2026_27].sort())
   const sensors = useSensors(useSensor(PointerSensor))
   function handleDragEnd(event: DragEndEvent) {
@@ -82,7 +70,7 @@ export default function MyPredictionPage() {
             </SortableContext>
           </DndContext>
           <div style={styles.footer}>
-            <button className="secondary" style={styles.backButton} onClick={() => navigate('/predict')}>
+            <button className="secondary" style={styles.backButton} onClick={() => nav('/predict')}>
               Go back
             </button>
           </div>
