@@ -41,8 +41,5 @@
   },
   "allowScripts": {
     "node@26.3.0": true
-  },
-  "engines": {
-    "node": "26.x"
   }
 }
