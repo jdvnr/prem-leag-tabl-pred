@@ -16,7 +16,7 @@
     "@supabase/supabase-js": "^2.106.2",
     "@typescript/native-preview": "^7.0.0-dev.20260603.1",
     "fs": "^0.0.1-security",
-    "node": "^26.3.0",
+    "node": "^24.16.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-router-dom": "^7.16.0",
@@ -40,6 +40,7 @@
     "vite": "^8.0.12"
   },
   "allowScripts": {
-    "node@26.3.0": true
+    "esbuild@0.27.0": true,
+    "node@24.16.0": true
   }
 }
