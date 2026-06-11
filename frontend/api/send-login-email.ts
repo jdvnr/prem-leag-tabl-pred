@@ -1,6 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { supabase } from './_supabase'
 import { Resend } from 'resend'
+import { loginAttempt } from '../src/api'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -9,12 +10,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
   const { email } = await req.body
-  const { data, error: dbError } = await supabase.rpc('login', {
-    p_email: email
-  })
-  if (dbError) return res.status(500).json({ error: 'Failed user look-up' })
+  const userData = await loginAttempt(email)
+  if (!userData) return res.status(500).json({ error: 'Failed user look-up' })
 
-  const token = data.token
+  const token = userData.token
   if (!email || !token) {
     return res.status(400).json({ error: 'Request malformed' })
   }

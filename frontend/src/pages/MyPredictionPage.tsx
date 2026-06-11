@@ -14,6 +14,8 @@ import {
 } from '@dnd-kit/sortable'
 import TeamItem from '../components/TeamItem'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useMyPrediction } from '../hooks/useMyPrediction'
+import { useSubmitPrediction } from '../hooks/useSubmitPrediction'
 import { getToken, saveSession } from '../auth'
 
 const TEAMS_2026_27 = [
@@ -24,9 +26,35 @@ const TEAMS_2026_27 = [
 ]
 
 export default function MyPredictionPage() {
-  const nav = useNavigate()
-  const [teams, setTeams] = useState<string[]>([...TEAMS_2026_27].sort())
+  const navigate = useNavigate()
+  const [teams, setTeams] = useState<string[]>([])
   const sensors = useSensors(useSensor(PointerSensor))
+  const [searchParams] = useSearchParams()
+
+
+  const { loading, prediction, isLocked, error: loadError } = useMyPrediction()
+  const { submit, saving, saved, error: saveError } = useSubmitPrediction()
+
+  useEffect(() => {
+    const urlToken = searchParams.get('token')
+    if (urlToken) {
+      saveSession(urlToken)
+      window.history.replaceState({}, '', '/predict/my')
+    } else if (!getToken()) {
+      navigate('/')
+    }
+  }, [])
+
+  useEffect(() => {
+    if (loading) return
+    if (prediction) {
+      setTeams(prediction)
+    } else {
+      setTeams(TEAMS_2026_27.sort())
+    }
+  }, [loading, prediction])
+
+
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
     if (!over || active.id === over.id) return
@@ -38,10 +66,26 @@ export default function MyPredictionPage() {
     })
   }
 
-  function handleSave() {
-    // Later: call submit_prediction with teams array and token
-    console.log('Saving prediction:', teams)
+  if (loading || teams.length == 0) {
+    return (
+      <div style={styles.page}>
+        <div style={styles.container}>
+          <p style={styles.muted}>Loading...</p>
+        </div>
+      </div>
+    )
   }
+
+  if (loadError) {
+    return (
+      <div style={styles.page}>
+        <div style={styles.container}>
+          <p style={styles.error}>{loadError}</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <>
       <div style={styles.page}>
@@ -49,33 +93,49 @@ export default function MyPredictionPage() {
           <div style={styles.header}>
             <div>
               <h1 style={styles.title}>League Predictor</h1>
-              <p style={styles.subtitle}>Drag to make your predictions for Premier League 2026/27</p>
+              <p style={styles.subtitle}>
+                {isLocked ? 'Your predictions are locked - good luck!' : 'Drag to make your predictions for Premier League 2026/27'}
+              </p>
             </div>
-            <button className="primary" style={styles.saveButton} onClick={handleSave}>
-              Save prediction
-            </button>
-          </div>
 
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext items={teams} strategy={verticalListSortingStrategy}>
-              <div style={styles.list}>
-                {teams.map((team, index) => (
+            {!isLocked && (
+              <button className="primary" style={styles.saveButton} onClick={() => submit(teams)} disabled={saving}>
+                {saving ? 'Saving...' : saved ? 'Saved ✓' : 'Save prediction'}
+              </button>
+            )}
+          </div>
+          {saveError && <p style={styles.error}>{saveError}</p>}
+          {isLocked ? (
+            <div style={styles.list}>
+              {teams.map((team, index) => (
+                <div key={team} style={styles.lockedRow}>
                   <TeamItem key={team} id={team} position={index + 1} name={team} />
-                ))}
-              </div>
-            </SortableContext>
-          </DndContext>
+                </div>
+              ))}
+            </div>) : (
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext items={teams} strategy={verticalListSortingStrategy}>
+                <div style={styles.list}>
+                  {teams.map((team, index) => (
+                    <TeamItem key={team} id={team} position={index + 1} name={team} />
+                  ))}
+                </div>
+              </SortableContext>
+            </DndContext >
+          )
+          }
+
           <div style={styles.footer}>
-            <button className="secondary" style={styles.backButton} onClick={() => nav('/predict')}>
+            <button className="secondary" style={styles.backButton} onClick={() => navigate('/predict')}>
               Go back
             </button>
           </div>
-        </div>
-      </div>
+        </div >
+      </div >
     </>
   )
 }
@@ -118,13 +178,36 @@ const styles: Record<string, React.CSSProperties> = {
     flexDirection: 'column',
     gap: '6px',
   },
-  footer: {
+  lockedRow: {
     display: 'flex',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: '16px'
+    gap: '16px',
+    padding: '14px 20px',
+    background: 'var(--surface)',
+    border: '1px solid var(--border)',
+    borderRadius: '8px',
   },
-  backButton: {
-    width: 'auto',
-  }
+  position: {
+    fontFamily: 'var(--font-display)',
+    fontSize: '1.2rem',
+    color: 'var(--muted)',
+    width: '28px',
+    textAlign: 'center',
+    flexShrink: 0,
+  },
+  name: {
+    flex: 1,
+    fontWeight: 500,
+    fontSize: '0.95rem',
+    color: 'var(--muted)',
+  },
+  muted: {
+    color: 'var(--muted)',
+    fontSize: '0.95rem',
+  },
+  error: {
+    color: 'var(--danger)',
+    fontSize: '0.9rem',
+    marginBottom: '16px',
+  },
 }

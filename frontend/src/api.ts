@@ -1,3 +1,4 @@
+import type { PostgrestError } from "@supabase/supabase-js";
 import { supabase } from "./supabaseClient";
 
 // ---- Types ---- //
@@ -14,13 +15,14 @@ export type Team = {
 }
 
 export type Prediction = {
-  id: string
-  usr_id: string
-  season: string
-  prediction: string[]
-  is_locked: boolean
-  submitted_at: string
-  updated_at: string
+  // id: string
+  // usr_id: string
+  // season: string
+  found: boolean
+  prediction?: string[]
+  is_locked?: boolean
+  // submitted_at: string
+  // updated_at: string
 }
 
 export type PublicPrediction = {
@@ -33,9 +35,6 @@ export type PublicPrediction = {
 }
 
 export type LoginResponse = {
-  found: false
-} | {
-  found: true
   user_id: string
   token: string
 }
@@ -45,21 +44,21 @@ export async function upsertUser(
   firstName: string,
   lastName: string,
   email: string
-): Promise<UpsertUserResponse> {
+): Promise<UpsertUserResponse | null> {
   const { data, error } = await supabase.rpc('upsert_user', {
     'p_first_name': firstName,
     'p_last_name': lastName,
     'p_email': email,
   })
-  if (error) throw error
+  if (error) return null
   return data as UpsertUserResponse
 }
 
-export async function login_attempt(email: string): Promise<LoginResponse> {
+export async function loginAttempt(email: string): Promise<LoginResponse | null> {
   const { data, error } = await supabase.rpc('login', {
     p_email: email
   })
-  if (error) throw error
+  if (error) return null
   return data as LoginResponse
 }
 
@@ -78,16 +77,16 @@ export async function getTeams(season: string): Promise<Team[]> {
 
 // ---- Predictions ---- //
 export async function getMyPrediction(
-  userId: string,
+  token: string,
   season: string,
 ): Promise<Prediction | null> {
-  const { data, error } = await supabase.from('predictions')
-    .select('*')
-    .eq('usr_id', userId)
-    .eq('season', season)
-    .single()
-  if (error && error.code !== 'PGSRT116') throw error
-  return data as Prediction | null
+  const { data, error } = await supabase.rpc('get_my_prediction', {
+    p_token: token,
+    p_season: season
+  })
+  if (error) throw error
+  if (!data.found) return null
+  return data as Prediction
 }
 
 export async function submitMyPrediction(

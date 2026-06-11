@@ -1,7 +1,7 @@
 import { Resend } from 'resend'
 import { supabase } from './_supabase'
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { log } from 'console'
+import { upsertUser } from '../src/api'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -16,14 +16,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Missing required fields' })
   }
 
-  const { data, error: dbError } = await supabase.rpc('upsert_user', {
-    p_first_name: firstName,
-    p_last_name: lastName,
-    p_email: email,
-  })
-  if (dbError) return res.status(500).json({ error: 'Failed to create user' })
-  console.log('Update performed; ', data)
-  const token = data.token
+  const userData = await upsertUser(firstName, lastName, email)
+
+  if (!userData) return res.status(500).json({ error: 'Failed to create user' })
+
+  const token = userData.token
   if (!email || !token || !firstName || !lastName) {
     return res.status(400).json({ error: 'Request malformed' })
   }
