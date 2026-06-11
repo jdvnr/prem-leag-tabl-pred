@@ -1,8 +1,11 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
-import { supabase } from './_supabase'
 import { Resend } from 'resend'
-import { loginAttempt } from '../src/api'
+import { supabase } from './_supabase'
 
+export type LoginResponse = {
+  user_id: string
+  token: string
+}
 const resend = new Resend(process.env.RESEND_API_KEY)
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -34,4 +37,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ error: 'Failed to send email' })
   }
   return res.status(200).json({ success: true })
+}
+
+async function loginAttempt(email: string): Promise<LoginResponse | null> {
+  const { data, error } = await supabase.rpc('login', {
+    p_email: email
+  })
+  if (error) return null
+  return data as LoginResponse
 }

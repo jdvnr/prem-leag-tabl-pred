@@ -1,11 +1,6 @@
-import { supabase } from "./supabaseClient";
+import { supabase } from "./supabaseClient"
 
 // ---- Types ---- //
-export type UpsertUserResponse = {
-  user_id: string,
-  token: string,
-  is_new: boolean
-}
 
 export type Team = {
   name: string,
@@ -14,14 +9,9 @@ export type Team = {
 }
 
 export type Prediction = {
-  // id: string
-  // usr_id: string
-  // season: string
   found: boolean
   prediction?: string[]
   is_locked?: boolean
-  // submitted_at: string
-  // updated_at: string
 }
 
 export type PublicPrediction = {
@@ -31,34 +21,6 @@ export type PublicPrediction = {
   prediction: string[]
   is_locked: boolean
   submitted_at: string
-}
-
-export type LoginResponse = {
-  user_id: string
-  token: string
-}
-
-// ---- User Tables ---- // 
-export async function upsertUser(
-  firstName: string,
-  lastName: string,
-  email: string
-): Promise<UpsertUserResponse | null> {
-  const { data, error } = await supabase.rpc('upsert_user', {
-    'p_first_name': firstName,
-    'p_last_name': lastName,
-    'p_email': email,
-  })
-  if (error) return null
-  return data as UpsertUserResponse
-}
-
-export async function loginAttempt(email: string): Promise<LoginResponse | null> {
-  const { data, error } = await supabase.rpc('login', {
-    p_email: email
-  })
-  if (error) return null
-  return data as LoginResponse
 }
 
 // ---- Teams ---- //
