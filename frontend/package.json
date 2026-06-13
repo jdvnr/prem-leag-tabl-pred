@@ -15,6 +15,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@supabase/supabase-js": "^2.106.2",
     "@typescript/native-preview": "^7.0.0-dev.20260603.1",
+    "@upstash/redis": "^1.38.0",
     "fs": "^0.0.1-security",
     "node": "^24.16.0",
     "react": "^19.2.6",

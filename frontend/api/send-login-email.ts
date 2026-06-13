@@ -1,6 +1,7 @@
 import { VercelRequest, VercelResponse } from '@vercel/node'
 import { Resend } from 'resend'
 import { supabase } from './_supabase'
+import { checkRateLimit, genVerificationCode } from './_verification'
 
 export type LoginResponse = {
   user_id: string
@@ -12,24 +13,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
-  const { email } = await req.body
-  const userData = await loginAttempt(email)
-  if (!userData) return res.status(500).json({ error: 'Failed user look-up' })
+  const { email } = req.body
 
-  const token = userData.token
-  if (!email || !token) {
+
+
+  if (!email) {
     return res.status(400).json({ error: 'Request malformed' })
   }
 
-  const loginUrl = `${process.env.VITE_APP_URL}/predict?token=${token}`
+  const allowed = await checkRateLimit(email)
+  if (!allowed) {
+    return res.status(429).json({ error: 'Too many attempts. Try again in 10 minutes' })
+  }
+  const userData = await loginAttempt(email)
+  if (!userData) return res.status(500).json({ error: 'Failed user look-up' })
+
+  const code = await genVerificationCode(email, userData.token)
   const { error } = await resend.emails.send({
     from: "That's Offside! <onboarding@resend.dev>",
     to: email,
-    subject: "Your login link - That's Offside!",
+    subject: "Here's your verification code: ",
     html: `
-      <p> Here's your login link for That's Offside:</p>
-      <a href="${loginUrl}">${loginUrl}</a>
-      <p>This link will take you directly to your logged-in experience.</p>
+      <p> Here's your verification code for That's Offside:</p>
+      <h2 style="letter-spacing: 0.3em; font-size: 2rem;">${code}</h2>
+      <p>This code will expire in 2 minutes.</p>
+      <p>If you didn't request this, fret not, no one can access your account.</p>
     `
   })
   if (error) {

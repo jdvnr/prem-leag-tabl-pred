@@ -1,6 +1,7 @@
 import { Resend } from 'resend'
 import { supabase } from './_supabase'
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import { checkRateLimit, genVerificationCode } from './_verification'
 
 export type UpsertUserResponse = {
   user_id: string,
@@ -21,25 +22,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Missing required fields' })
   }
 
+  const allowed = await checkRateLimit(email)
+  if (!allowed) {
+    return res.status(429).json({ error: 'Too many attempts. Try again in 15 minutes.' })
+  }
+
   const userData = await upsertUser(firstName, lastName, email)
 
   if (!userData) return res.status(500).json({ error: 'Failed to create user' })
 
-  const token = userData.token
-  if (!email || !token || !firstName || !lastName) {
-    return res.status(400).json({ error: 'Request malformed' })
-  }
+  const code = await genVerificationCode(email, userData.token)
   console.log('Attempting to send email to: ', email)
-  const loginUrl = `${process.env.VITE_APP_URL}/predict?token=${token}`
   const { data: emailData, error: emailError } = await resend.emails.send({
     from: "That's Offside! <onboarding@resend.dev>",
     to: 'nair.jayadev@gmail.com',
     subject: "Welcome to That's Offside!",
     html: `
-      <p> You're now registered at That's Offside! Here's your login link:</p>
-      <a href="${loginUrl}">${loginUrl}</a>
-      <p>This link will take you directly to your logged-in experience.</p>
-      <p>You can reuse this link to sign-in every time - but keep it to yourself!</p>
+      <p> You're now registered at That's Offside! Here's your verification code:</p>
+      <h2 style="letter-spacing: 0.3em; font-size: 2rem;">${code}</h2>
+      <p> Use this code within 2 minutes to login and get predicting.</p>
     `
   })
   console.log('Resend data:', JSON.stringify(emailData))
