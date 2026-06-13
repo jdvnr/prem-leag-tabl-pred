@@ -30,7 +30,7 @@ export default function MyPredictionPage() {
   const [teams, setTeams] = useState<string[]>([])
   const sensors = useSensors(useSensor(PointerSensor))
   const [searchParams] = useSearchParams()
-
+  const [modified, setModified] = useState<boolean>(false)
 
   const { loading, prediction, isLocked, error: loadError } = useMyPrediction()
   const { submit, saving, saved, error: saveError } = useSubmitPrediction()
@@ -58,7 +58,7 @@ export default function MyPredictionPage() {
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event
     if (!over || active.id === over.id) return
-
+    if (!modified) setModified(true)
     setTeams(prev => {
       const oldIndex = prev.indexOf(active.id as string)
       const newIndex = prev.indexOf(over.id as string)
@@ -85,54 +85,84 @@ export default function MyPredictionPage() {
       </div>
     )
   }
-
+  const saveButtonStyle: React.CSSProperties = {
+    width: 'auto',
+    whiteSpace: 'nowrap' as const,
+    flexShrink: 0,
+    padding: '10px 20px',
+    fontSize: '1rem',
+    background: modified ? 'var(--accent)' : 'var(--muted)'
+  }
   return (
     <>
       <div style={styles.page}>
         <div style={styles.container}>
           <div style={styles.header}>
-            <div>
-              <h1 style={styles.title}>League Predictor</h1>
+            <div style={styles.headerLeft}>
+              <h1 style={styles.title}>Your Prediction</h1>
               <p style={styles.subtitle}>
-                {isLocked ? 'Your predictions are locked - good luck!' : 'Drag to make your predictions for Premier League 2026/27'}
+                {isLocked ? 'Locked — good luck!' : 'Drag to reorder'}
               </p>
             </div>
-
             {!isLocked && (
-              <button className="primary" style={styles.saveButton} onClick={() => submit(teams)} disabled={saving}>
-                {saving ? 'Saving...' : saved ? 'Saved ✓' : 'Save prediction'}
+              <button
+                className="primary"
+                style={saveButtonStyle}
+                onClick={() => {
+                  submit(teams)
+                  setModified(false)
+                }}
+                disabled={!modified || saving}
+              >
+                {modified ?
+                  saving ?
+                    'Saving...' :
+                    saved ?
+                      'Saved ✓' :
+                      'Save'
+                  : 'Save'}
               </button>
             )}
           </div>
-          {saveError && <p style={styles.error}>{saveError}</p>}
-          {isLocked ? (
-            <div style={styles.list}>
-              {teams.map((team, index) => (
-                <div key={team} style={styles.lockedRow}>
-                  <TeamItem key={team} id={team} position={index + 1} name={team} />
-                </div>
-              ))}
-            </div>) : (
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext items={teams} strategy={verticalListSortingStrategy}>
-                <div style={styles.list}>
-                  {teams.map((team, index) => (
+          <div className="stripe" />
+          <div style={styles.body}>
+            {saveError && <p style={styles.error}>{saveError}</p>}
+            <p className="section-label">
+              {isLocked ? 'Final Prediction' : '2026-27 Premier League'}
+            </p>
+            {isLocked ? (
+              <div style={styles.list}>
+                {teams.map((team, index) => (
+                  <div key={team} style={styles.lockedRow}>
                     <TeamItem key={team} id={team} position={index + 1} name={team} />
-                  ))}
-                </div>
-              </SortableContext>
-            </DndContext >
-          )
-          }
+                  </div>
+                ))}
+              </div>) : (
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext items={teams} strategy={verticalListSortingStrategy}>
+                  <div style={styles.list}>
+                    {teams.map((team, index) => (
+                      <TeamItem key={team} id={team} position={index + 1} name={team} />
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext >
+            )
+            }
+          </div>
 
           <div style={styles.footer}>
             <button className="secondary" style={styles.backButton} onClick={() => navigate('/predict')}>
               Go back
             </button>
+          </div>
+          <div style={styles.footer}>
+            <span style={styles.footerText}>That's Offside!</span>
+            <span style={styles.footerText}>2026–27 Season</span>
           </div>
         </div >
       </div >
@@ -143,71 +173,111 @@ export default function MyPredictionPage() {
 const styles: Record<string, React.CSSProperties> = {
   page: {
     minHeight: '100vh',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
     padding: '40px 24px',
   },
   container: {
-    maxWidth: '600px',
-    margin: '0 auto',
+    background: 'var(--surface)',
+    border: '2px solid var(--border)',
+    width: '100%',
+    maxWidth: '560px',
+    overflow: 'hidden',
   },
   header: {
+    background: 'var(--border)',
+    padding: '20px 24px',
     display: 'flex',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: '32px',
     gap: '16px',
+  },
+  headerLeft: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '2px',
   },
   title: {
     fontFamily: 'var(--font-display)',
-    fontSize: '2.5rem',
-    letterSpacing: '0.05em',
-    color: 'var(--accent)',
+    fontSize: '2rem',
+    color: 'var(--surface)',
+    letterSpacing: '0.04em',
     lineHeight: 1,
   },
   subtitle: {
-    color: 'var(--muted)',
-    fontSize: '0.9rem',
-    marginTop: '6px',
+    fontFamily: 'var(--font-display)',
+    fontSize: '0.7rem',
+    color: '#7B8A96',
+    letterSpacing: '0.12em',
   },
   saveButton: {
     width: 'auto',
-    whiteSpace: 'nowrap',
+    whiteSpace: 'nowrap' as const,
     flexShrink: 0,
+    padding: '10px 20px',
+    fontSize: '1rem',
+  },
+  body: {
+    padding: '24px',
   },
   list: {
     display: 'flex',
-    flexDirection: 'column',
-    gap: '6px',
+    flexDirection: 'column' as const,
+    gap: '5px',
   },
   lockedRow: {
     display: 'flex',
     alignItems: 'center',
-    gap: '16px',
-    padding: '14px 20px',
-    background: 'var(--surface)',
-    border: '1px solid var(--border)',
-    borderRadius: '8px',
+    gap: '14px',
+    padding: '12px 16px',
+    background: 'var(--bg)',
+    border: '1.5px solid var(--border)',
+    borderLeft: '4px solid var(--muted)',
+    opacity: 0.7,
   },
   position: {
     fontFamily: 'var(--font-display)',
-    fontSize: '1.2rem',
+    fontSize: '1.1rem',
     color: 'var(--muted)',
-    width: '28px',
-    textAlign: 'center',
+    width: '24px',
+    textAlign: 'center' as const,
     flexShrink: 0,
   },
   name: {
     flex: 1,
-    fontWeight: 500,
-    fontSize: '0.95rem',
+    fontSize: '0.85rem',
+    fontWeight: 700,
     color: 'var(--muted)',
-  },
-  muted: {
-    color: 'var(--muted)',
-    fontSize: '0.95rem',
+    letterSpacing: '0.04em',
+    textTransform: 'uppercase' as const,
   },
   error: {
     color: 'var(--danger)',
-    fontSize: '0.9rem',
+    fontSize: '0.85rem',
+    fontFamily: 'var(--font-display)',
+    letterSpacing: '0.06em',
     marginBottom: '16px',
   },
+  muted: {
+    color: 'var(--muted)',
+    fontSize: '0.875rem',
+    padding: '24px 0',
+    textAlign: 'center' as const,
+  },
+  footer: {
+    background: 'var(--border)',
+    padding: '6px 24px',
+    display: 'flex',
+    justifyContent: 'space-between',
+  },
+  footerText: {
+    fontFamily: 'var(--font-display)',
+    fontSize: '0.65rem',
+    color: '#4A5568',
+    letterSpacing: '0.12em',
+  },
+  backButton: {
+    color: '#9ba8c4',
+  }
 }

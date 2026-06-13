@@ -37,32 +37,50 @@ export default function WelcomePage() {
     }
 
   }
-  return (<div style={styles.page}>
-    <div style={styles.card}>
-      <div style={styles.header}>
-        <h1 style={styles.title}>That's Offside!</h1>
-        <p style={styles.subtitle}>League Predictor, and more!</p>
+  return (
+    <div style={styles.page}>
+      <div style={styles.card}>
+        <div style={styles.hero}>
+          <div style={styles.seasonBadge}>2026-27 Season</div>
+          <h1 style={styles.title}>
+            That's<br />
+            <span style={styles.titleAccent}>Offside!</span>
+          </h1>
+          <p style={styles.heroSub}>League Predictor, and more!</p>
+        </div>
+        <div className="stripe" />
+        <div style={styles.body}>
+          {view === 'email' && (
+            <EmailForm
+              onContinue={handleEmailContinue}
+              onSignUp={() => setView('signup')}
+            />
+          )}
+
+          {view === 'signup' && (
+            <SignUpForm
+              onSubmit={handleSignUp}
+              onBack={() => setView('email')}
+            />
+          )}
+
+          {view === 'confirmation' && (
+            <div style={styles.header}>
+              <p style={styles.confirmation}>
+                <p style={styles.confirmTitle}> Check your email</p>
+                <p style={styles.confirmSub}>
+                  We've sent you a login email. Feel free to close this tab.
+                </p>
+              </p>
+            </div>
+          )}
+        </div>
+        <div style={styles.footer}>
+          <span style={styles.footerText}>That's Offside!</span>
+          <span style={styles.footerText}>Free to play</span>
+        </div>
       </div>
-
-      {view === 'email' && (
-        <EmailForm
-          onContinue={handleEmailContinue}
-          onSignUp={() => setView('signup')}
-        />
-      )}
-
-      {view === 'signup' && (
-        <SignUpForm
-          onSubmit={handleSignUp}
-          onBack={() => setView('email')}
-        />
-      )}
-
-      {view === 'confirmation' && (
-        <div style={styles.header}><p style={styles.confirmation}>To login, use the link sent to your email.</p></div>
-      )}
-    </div>
-  </div>)
+    </div>)
 }
 
 const styles: Record<string, React.CSSProperties> = {
@@ -75,29 +93,72 @@ const styles: Record<string, React.CSSProperties> = {
   },
   card: {
     background: 'var(--surface)',
-    border: '1px solid var(--border)',
-    borderRadius: '12px',
-    padding: '48px 40px',
+    border: '2px solid var(--border)',
     width: '100%',
-    maxWidth: '420px',
+    maxWidth: '400px',
+    overflow: 'hidden',
   },
-  header: {
-    marginBottom: '40px',
-    textAlign: 'center',
+  hero: {
+    background: 'var(--border)',
+    padding: '28px 28px 24px',
+  },
+  seasonBadge: {
+    display: 'inline-block',
+    background: 'var(--accent)',
+    color: 'var(--surface)',
+    fontFamily: 'var(--font-display)',
+    fontSize: '0.7rem',
+    letterSpacing: '0.15em',
+    padding: '3px 10px',
+    marginBottom: '10px',
   },
   title: {
     fontFamily: 'var(--font-display)',
-    fontSize: '3.5rem',
-    letterSpacing: '0.05em',
-    color: 'var(--accent)',
-    lineHeight: 1,
+    fontSize: '3.8rem',
+    color: 'var(--surface)',
+    lineHeight: 0.9,
+    letterSpacing: '0.02em',
   },
-  subtitle: {
-    color: 'var(--muted)',
-    marginTop: '8px',
-    fontSize: '0.95rem',
+  titleAccent: {
+    color: 'var(--highlight)',
+  },
+  heroSub: {
+    color: '#7B8A96',
+    fontSize: '0.7rem',
+    letterSpacing: '0.12em',
+    textTransform: 'uppercase',
+    marginTop: '10px',
+    fontFamily: 'var(--font-display)',
+  },
+  body: {
+    padding: '28px',
   },
   confirmation: {
+    textAlign: 'center',
+    padding: '12px 0',
+  },
+  confirmTitle: {
+    fontFamily: 'var(--font-display)',
+    fontSize: '1.8rem',
+    letterSpacing: '0.05em',
+    color: 'var(--accent)',
+    marginBottom: '10px',
+  },
+  confirmSub: {
     color: 'var(--muted)',
-  }
+    fontSize: '0.875rem',
+    lineHeight: 1.6,
+  },
+  footer: {
+    background: 'var(--border)',
+    padding: '6px 28px',
+    display: 'flex',
+    justifyContent: 'space-between',
+  },
+  footerText: {
+    fontFamily: 'var(--font-display)',
+    fontSize: '0.65rem',
+    color: '#4A5568',
+    letterSpacing: '0.12em',
+  },
 }

@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto+Slab:wght@400;700&display=swap');
 
 *,
 *::before,
@@ -9,17 +9,17 @@
 }
 
 :root {
-  --bg: #0d0d0f;
-  --surface: #16161a;
-  --border: #2a2a30;
-  --text: #f0f0f0;
-  --muted: #6b6b7a;
-  --accent: #00e87a;
-  --accent-dim: #00e87a22;
-  --danger: #ff4d4d;
+  --bg: #F5F0E8;
+  --surface: #FFFDF7;
+  --border: #1B1F3B;
+  --text: #1B1F3B;
+  --muted: #6B6558;
+  --accent: #C0272D;
+  --highlight: #F5C842;
+  --danger: #C0272D;
 
   --font-display: 'Bebas Neue', sans-serif;
-  --font-body: 'DM Sans', sans-serif;
+  --font-body: 'Roboto Slab', serif;
 }
 
 body {
@@ -33,14 +33,14 @@ body {
 input {
   font-family: var(--font-body);
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   color: var(--text);
-  border-radius: 6px;
+  border-radius: 0;
   padding: 12px 16px;
-  font-size: 1rem;
+  font-size: 0.95rem;
   width: 100%;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.15s;
 }
 
 input:focus {
@@ -52,18 +52,18 @@ input::placeholder {
 }
 
 button {
-  font-family: var(--font-body);
+  font-family: var(--font-display);
   cursor: pointer;
   border: none;
-  border-radius: 6px;
-  font-size: 1rem;
-  font-weight: 600;
+  border-radius: 0;
+  font-size: 1.1rem;
+  letter-spacing: 0.08em;
   padding: 12px 24px;
-  transition: opacity 0.2s, transform 0.1s;
+  transition: opacity 0.15s, transform 0.1s;
 }
 
 button:hover {
-  opacity: 0.9;
+  opacity: 0.88;
 }
 
 button:active {
@@ -72,21 +72,38 @@ button:active {
 
 button.primary {
   background: var(--accent);
-  color: #000;
+  color: var(--surface);
   width: 100%;
+  border-bottom: 3px solid #8B1A1A;
 }
 
 button.secondary {
   background: transparent;
-  color: var(--muted);
+  color: var(--border);
+  border: 2px solid var(--border);
   width: 100%;
 }
 
 button.secondary:hover {
-  color: var(--text);
+  background: var(--border);
+  color: var(--surface);
 }
 
-.hub-card:hover {
-  border-color: var(--accent);
-  background: var(--accent-dim);
+.stripe {
+  height: 4px;
+  background: repeating-linear-gradient(90deg,
+      var(--border) 0px,
+      var(--border) 20px,
+      var(--accent) 20px,
+      var(--accent) 40px);
+}
+
+.section-label {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  color: var(--accent);
+  letter-spacing: 0.14em;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px;
+  margin-bottom: 16px;
 }

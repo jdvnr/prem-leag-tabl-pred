@@ -26,7 +26,7 @@ export default function SignUpForm({
   return (
     <>
       <div style={styles.form}>
-        <p style={styles.label}>Create your account</p>
+        <p className="section-label">Create your account</p>
         <div style={styles.nameRow}>
           <input
             type="text"
@@ -40,7 +40,6 @@ export default function SignUpForm({
             placeholder="Fernandes"
             value={lastName}
             onChange={e => setLastName(e.target.value)}
-            autoFocus
           />
         </div>
         <input
@@ -48,7 +47,6 @@ export default function SignUpForm({
           placeholder="your@email.com"
           value={email}
           onChange={e => setEmail(e.target.value)}
-          autoFocus
         />
         <div style={styles.actions}>
           <button className="primary" onClick={handleSubmit}>
@@ -67,22 +65,17 @@ const styles: Record<string, React.CSSProperties> = {
   form: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '12px',
-  },
-  label: {
-    color: 'var(--muted)',
-    fontSize: '0.9rem',
-    marginBottom: '4px',
+    gap: '10px',
   },
   nameRow: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
-    gap: '12px',
+    gap: '10px',
   },
   actions: {
     display: 'flex',
     flexDirection: 'column',
     gap: '8px',
-    marginTop: '8px',
+    marginTop: '4px',
   },
 }

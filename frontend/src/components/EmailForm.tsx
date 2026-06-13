@@ -34,8 +34,13 @@ export default function EmailForm({
           <button className="primary" onClick={handleSubmit}>
             Continue
           </button>
+          <div style={styles.divider}>
+            <span style={styles.dividerLine} />
+            <span style={styles.dividerText}>New here?</span>
+            <span style={styles.dividerLine} />
+          </div>
           <button className="secondary" onClick={onSignUp}>
-            Sign up
+            Create account
           </button>
         </div>
       </div>
@@ -47,16 +52,31 @@ const styles: Record<string, React.CSSProperties> = {
   form: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '16px',
-  },
-  label: {
-    color: 'var(--muted)',
-    fontSize: '0.9rem',
+    gap: '12px',
   },
   actions: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px',
-    marginTop: '8px',
+    gap: '10px',
+    marginTop: '4px',
+  },
+  divider: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+  },
+  dividerLine: {
+    flex: 1,
+    height: '1px',
+    background: 'var(--border)',
+    opacity: 0.3,
+    display: 'block',
+  },
+  dividerText: {
+    fontSize: '0.7rem',
+    color: 'var(--muted)',
+    letterSpacing: '0.12em',
+    textTransform: 'uppercase',
+    fontFamily: 'var(--font-display)',
   },
 }
