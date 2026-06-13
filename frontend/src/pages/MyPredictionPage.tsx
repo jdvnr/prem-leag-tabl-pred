@@ -29,20 +29,13 @@ export default function MyPredictionPage() {
   const navigate = useNavigate()
   const [teams, setTeams] = useState<string[]>([])
   const sensors = useSensors(useSensor(PointerSensor))
-  const [searchParams] = useSearchParams()
   const [modified, setModified] = useState<boolean>(false)
 
   const { loading, prediction, isLocked, error: loadError } = useMyPrediction()
   const { submit, saving, saved, error: saveError } = useSubmitPrediction()
 
   useEffect(() => {
-    const urlToken = searchParams.get('token')
-    if (urlToken) {
-      saveSession(urlToken)
-      window.history.replaceState({}, '', '/predict/my')
-    } else if (!getToken()) {
-      navigate('/')
-    }
+    if (!getToken()) navigate('/')
   }, [])
 
   useEffect(() => {

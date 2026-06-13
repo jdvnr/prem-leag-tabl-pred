@@ -2,21 +2,30 @@ import { useState } from 'react'
 // import { useNavigate } from 'react-router-dom'
 import EmailForm from '../components/EmailForm'
 import SignUpForm from '../components/SignUpForm'
+import { useNavigate } from 'react-router-dom'
+import { saveSession } from '../auth'
+import VerificationForm from '../components/VerificationForm'
 // import { saveSession } from '../auth'
 
-type View = 'email' | 'signup' | 'confirmation'
+type View = 'email' | 'signup' | 'verification'
 export default function WelcomePage() {
   const [view, setView] = useState<View>('email')
-  // const navigate = useNavigate()
+  const [email, setEmail] = useState('')
+  const [codeError, setCodeError] = useState<string | null>(null)
+  const [verifying, setVerifying] = useState(false)
+  const navigate = useNavigate()
 
   async function handleEmailContinue(email: string) {
     try {
-      await fetch('/api/send-login-email', {
+      const res = await fetch('/api/send-login-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
       })
-      setView('confirmation')
+      if (res.status === 429) {
+        return
+      }
+      setView('verification')
     } catch (err) {
       console.error('Login failed: ', err)
     }
@@ -26,17 +35,55 @@ export default function WelcomePage() {
   async function handleSignUp(firstName: string, lastName: string, email: string) {
     // Later: call upsert_user, get token, send email
     try {
-      await fetch('/api/send-signup-email', {
+      const res = await fetch('/api/send-signup-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, firstName, lastName })
       })
-      setView('confirmation')
+      if (res.status === 429) return
+      setView('verification')
     } catch (err) {
       console.error('Sign up failed: ', err)
     }
-
   }
+
+  async function handleVerifyCode(code: string) {
+    setVerifying(true)
+    setCodeError(null)
+
+    try {
+      const res = await fetch('/api/verify-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code })
+      })
+      const data = await res.json()
+
+      if (!res.ok) {
+        setCodeError(data.error ?? 'Invalid or expired code')
+        setVerifying(false)
+        return
+      }
+      saveSession(data.token)
+      navigate('/predict')
+    } catch (err) {
+      setCodeError('Something went wrong. Try again ' + err)
+      setVerifying(false)
+    }
+  }
+
+  async function handleResend() {
+    try {
+      await fetch('/api/send-login-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      })
+    } catch (err) {
+      console.error('Resend failed: ', err)
+    }
+  }
+
   return (
     <div style={styles.page}>
       <div style={styles.card}>
@@ -63,16 +110,15 @@ export default function WelcomePage() {
               onBack={() => setView('email')}
             />
           )}
-
-          {view === 'confirmation' && (
-            <div style={styles.header}>
-              <p style={styles.confirmation}>
-                <p style={styles.confirmTitle}> Check your email</p>
-                <p style={styles.confirmSub}>
-                  We've sent you a login email. Feel free to close this tab.
-                </p>
-              </p>
-            </div>
+          {view === 'verification' && (
+            <VerificationForm
+              email={email}
+              onVerify={handleVerifyCode}
+              onResend={handleResend}
+              onBack={() => setView('email')}
+              error={codeError}
+              loading={verifying}
+            />
           )}
         </div>
         <div style={styles.footer}>
@@ -132,22 +178,6 @@ const styles: Record<string, React.CSSProperties> = {
   },
   body: {
     padding: '28px',
-  },
-  confirmation: {
-    textAlign: 'center',
-    padding: '12px 0',
-  },
-  confirmTitle: {
-    fontFamily: 'var(--font-display)',
-    fontSize: '1.8rem',
-    letterSpacing: '0.05em',
-    color: 'var(--accent)',
-    marginBottom: '10px',
-  },
-  confirmSub: {
-    color: 'var(--muted)',
-    fontSize: '0.875rem',
-    lineHeight: 1.6,
   },
   footer: {
     background: 'var(--border)',
