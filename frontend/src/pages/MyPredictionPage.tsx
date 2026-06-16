@@ -13,10 +13,10 @@ import {
   arrayMove,
 } from '@dnd-kit/sortable'
 import TeamItem from '../components/TeamItem'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { useMyPrediction } from '../hooks/useMyPrediction'
 import { useSubmitPrediction } from '../hooks/useSubmitPrediction'
-import { getToken, saveSession } from '../auth'
+import { getToken } from '../auth'
 
 const TEAMS_2026_27 = [
   'Arsenal', 'Aston Villa', 'Bournemouth', 'Brentford', 'Brighton',

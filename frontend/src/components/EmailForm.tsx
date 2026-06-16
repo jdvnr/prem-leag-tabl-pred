@@ -1,6 +1,3 @@
-import { useState } from 'react'
-
-
 type Props = {
   email: string,
   setEmail: (email: string) => void,
