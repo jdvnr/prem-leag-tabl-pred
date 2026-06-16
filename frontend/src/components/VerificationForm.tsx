@@ -4,7 +4,7 @@ import type { ClipboardEvent, KeyboardEvent } from 'react'
 
 type Props = {
   email: string
-  onVerify: (code: string) => void
+  onVerify: (email: string, code: string) => void
   onResend: () => void
   onBack: () => void
   error: string | null
@@ -32,7 +32,7 @@ export default function VerificationForm({ email, onVerify, onResend, onBack, er
   function submit(newDigits: string[]) {
     const digits = newDigits.join('')
     if (code.length === CODE_LENGTH && !newDigits.includes('')) {
-      onVerify(digits)
+      onVerify(email, digits)
     }
   }
 

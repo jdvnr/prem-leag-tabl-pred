@@ -29,6 +29,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!userData) return res.status(500).json({ error: 'Failed user look-up' })
 
   const code = await genVerificationCode(email, userData.token)
+  console.log('Verification code: ', code)
   const { error } = await resend.emails.send({
     from: "That's Offside! <onboarding@resend.dev>",
     to: email,

@@ -47,7 +47,7 @@ export default function WelcomePage() {
     }
   }
 
-  async function handleVerifyCode(code: string) {
+  async function handleVerifyCode(email: string, code: string) {
     setVerifying(true)
     setCodeError(null)
 
@@ -99,6 +99,8 @@ export default function WelcomePage() {
         <div style={styles.body}>
           {view === 'email' && (
             <EmailForm
+              email={email}
+              setEmail={setEmail}
               onContinue={handleEmailContinue}
               onSignUp={() => setView('signup')}
             />

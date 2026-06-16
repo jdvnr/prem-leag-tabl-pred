@@ -2,17 +2,20 @@ import { useState } from 'react'
 
 
 type Props = {
+  email: string,
+  setEmail: (email: string) => void,
   onContinue: (email: string) => void,
   onSignUp: () => void
 
 }
 
 export default function EmailForm({
+  email,
+  setEmail,
   onContinue,
   onSignUp
 }: Props
 ) {
-  const [email, setEmail] = useState('')
   function handleSubmit() {
     if (!email.trim())
       return

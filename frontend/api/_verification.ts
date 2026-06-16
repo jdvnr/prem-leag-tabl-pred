@@ -34,6 +34,7 @@ export async function genVerificationCode(email: string, token: string): Promise
 export async function verifyCode(email: string, code: string): Promise<string | null> {
   const key = `verify:${email}`
   const stored = await redis.get<string>(key)
+
   if (!stored) return null
   const payload: VerificationPayload = typeof stored === 'string' ? JSON.parse(stored) : stored
   if (!payload || payload.code !== code) return null
